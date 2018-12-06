@@ -12,4 +12,3 @@ const Geocalc = {
         return   (n = Math.atan2(o, i)) < 0 && (n += 2 * Math.PI), n
     }
 }
-export default Geocalc

@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+    <head>
+        <meta utf="utf-8">
+        <title>test Demo</title>
+    <body>
+        <input type="button" value="角度" style="width: 120px;" onclick="showCarRoute();">
+        <div id='map' style="z-index: 0"></div>
+    <script type="text/javascript" src="map.js"></script>
+	<script type="text/javascript" src="../Geocalc.js"></script>
+	<script type="text/javascript" >
+		
+    var i=0,carRoute,CarMark;
+    function showCarRoute() {
+        if(i<25){
+            if(CarMark)CarMark.remove();
+
+            if(!carRoute)
+            {
+                carRoute = new L.polyline({});
+                carRoute.addTo(LMap.map);
+            }
+            var y =39.230095+i*0.02;
+            var x = 117.141985-i*0.03;
+            carRoute.addLatLng([y,x]);
+            //CarMark 当前车辆
+            CarMark = LMap.location([y, x], //经纬度
+                {
+                    url: "monitor.png",
+                    width: 64,
+                    height: 64
+                },//图标
+                "<div>车辆名称<a href='http://www.baidu.com' target='_blank'>大众</a></div>");//车辆气泡内容
+            i++;
+            setTimeout(showCarRoute,650);
+
+        }else
+        {
+            i=0;
+            //移除方法
+            carRoute.remove();
+            carRoute = null;
+        }
+    }
+	</script>
+	</body>
+</html>
