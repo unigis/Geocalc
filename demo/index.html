@@ -4,44 +4,89 @@
         <meta utf="utf-8">
         <title>test Demo</title>
     <body>
-        <input type="button" value="角度" style="width: 120px;" onclick="showCarRoute();">
+        <input type="button" value="车头与车向一致" style="width: 120px;" onclick="showCarRoute();">
+        <input type="button" value="地理围栏/多边形查询" style="width: 120px;" onclick="GeoFen();">
+        <input type="button" value="方位曲线" style="width: 120px;" onclick="drawAzimLine();">
+        <input type="button" value="清空" style="width: 120px;" onclick="clear();">
         <div id='map' style="z-index: 0"></div>
     <script type="text/javascript" src="map.js"></script>
 	<script type="text/javascript" src="../Geocalc.js"></script>
 	<script type="text/javascript" >
 		
-    var i=0,carRoute,CarMark;
+    var i=1,carRoute,CarMark, icon = new L.icon({iconUrl: "monitor.png", iconSize: [64, 64],iconAnchor:[32,32]});
+    var fencng;
+
+    if(!carRoute)
+    {
+        carRoute = new L.polyline({});
+        carRoute.addTo(LMap.map);
+    }
+    carRoute.addLatLng([39.230095,117.141985]);
+
+    function clear(){
+
+    }
+
     function showCarRoute() {
         if(i<25){
-            if(CarMark)CarMark.remove();
+            if(CarMark)CarMark.remove();    
+            var y =39.230095+1*0.12*Math.random();
+            var x = 117.141985-1*0.13*Math.random();
 
-            if(!carRoute)
-            {
-                carRoute = new L.polyline({});
-                carRoute.addTo(LMap.map);
-            }
-            var y =39.230095+i*0.02;
-            var x = 117.141985-i*0.03;
             carRoute.addLatLng([y,x]);
-            //CarMark 当前车辆
-            CarMark = LMap.location([y, x], //经纬度
-                {
-                    url: "monitor.png",
-                    width: 64,
-                    height: 64
-                },//图标
-                "<div>车辆名称<a href='http://www.baidu.com' target='_blank'>大众</a></div>");//车辆气泡内容
+           
+            CarMark = L.marker([y, x], {
+                icon: icon,
+                bounceOnAdd: true,
+                draggable: false
+            });       
+            var lnglats = carRoute.getLatLngs();
+            CarMark.addTo(LMap.map);
+
+            var rt = 360 - Geocalc.toAngle(Geocalc.getPntRadian(lnglats[lnglats.length-2],lnglats[lnglats.length-1]));
+
+            //顺时针方向旋转    
+            CarMark.setRotationAngle(90 + rt);
             i++;
             setTimeout(showCarRoute,650);
 
         }else
         {
             i=0;
-            //移除方法
-            carRoute.remove();
-            carRoute = null;
+            carRoute.setLatLngs([[39.230095,117.141985]]);
         }
     }
+    //地理围栏
+    function GeoFen(){
+        fencng= new L.polygon([[[39.264158,117.092285],[39.031986,116.964569],[38.978628,117.233734],[38.962612,117.502899],[39.011715,117.26944],[39.072511,117.507019],[39.085304,117.200775],[39.183304,117.511139],[39.066114,117.029114],[39.174788,117.166443],[39.197141,117.285919],[39.162011,117.298279],[39.173723,117.376556],[39.218423,117.379303],[39.264158,117.092285]]]);
+        fencng.addTo(LMap.map);
+        function onMapClick(e) {
+            console.log("获取到经纬度:" + e[0] + "  " + e[1]);
+            Geocalc.ptIsInPolygon(fencng.getLatLngs()[0],{lng:e[0],lat:e[1]})?alert("进入管辖区域！"):alert("离开管辖区域！");
+
+            // console.log(Geocalc.geofencng(e[0],e[1],regionSet.getLatLngs()[0]));
+        }
+
+        LMap.getMapPoint(onMapClick);
+
+    }
+    //方位曲线
+    function drawAzimLine(){
+        var unit = 50,ptList=[];//点间距
+        var count = 40;
+
+        for (var i = 0; i < count; i++) {
+            var pt =  Geocalc.getAntAzimPoint(117.092285,39.264158,45,unit * i)
+            if (pt.lng > -180 && pt.lng < 180 && pt.lat > -90 && pt.lat < 90) {
+                ptList.push(pt);
+            }
+        }
+       var AzimLine= new L.polyline(ptList);
+       AzimLine.addTo(LMap.map);
+
+    }
+
+   
 	</script>
 	</body>
 </html>
